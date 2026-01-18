@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Full-stack email scheduler with BullMQ and React",
   "main": "index.js",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",

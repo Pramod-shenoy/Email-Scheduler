@@ -22,8 +22,8 @@ export const prisma = new PrismaClient();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.FRONTEND_URL
     : 'http://localhost:3000',
   credentials: true
 }));
@@ -72,4 +72,10 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-startServer();
+// Export for Vercel
+export default app;
+
+// Start server if not in Vercel environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  startServer();
+}
