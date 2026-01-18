@@ -25,14 +25,22 @@ const scheduleEmailSchema = z.object({
 router.post('/schedule', authenticateToken, upload.array('attachments'), async (req: AuthenticatedRequest, res) => {
   try {
     // Parse recipients if string (FormData)
-    let recipients: string | string[] = req.body.recipients;
-    if (typeof recipients === 'string') {
+    let recipients: string[] = [];
+    const rawRecipients = req.body.recipients;
+
+    if (typeof rawRecipients === 'string') {
       try {
-        recipients = JSON.parse(recipients);
+        const parsed = JSON.parse(rawRecipients);
+        recipients = Array.isArray(parsed) ? parsed : [parsed];
       } catch (e) {
         // Handle single email case or array like string
-        recipients = [recipients];
+        recipients = [rawRecipients];
       }
+    } else if (Array.isArray(rawRecipients)) {
+      recipients = rawRecipients;
+    } else {
+      // Fallback or error handling if needed, though zod will catch empty arrays later
+      recipients = [];
     }
 
     // Parse other numeric fields
