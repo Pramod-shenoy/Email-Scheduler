@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  avatar    String?
+  googleId  String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  emailJobs EmailJob[]
+
+  @@map("users")
+}
+
+model EmailJob {
+  id          String    @id @default(cuid())
+  subject     String
+  body        String
+  recipients  String    // JSON string array for SQLite
+  scheduledAt DateTime
+  sentAt      DateTime?
+  status      String    @default("SCHEDULED") // String instead of enum for SQLite
+  
+  // Rate limiting and scheduling
+  delayBetweenEmails Int @default(2000) // milliseconds
+  hourlyLimit        Int @default(200)
+  
+  attachments String? // JSON string for file metadata
+  
+  // Job tracking
+  bullJobId   String?   @unique
+  totalEmails Int
+  sentEmails  Int       @default(0)
+  failedEmails Int      @default(0)
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Individual email sends
+  emailSends EmailSend[]
+
+  @@map("email_jobs")
+}
+
+model EmailSend {
+  id        String     @id @default(cuid())
+  email     String
+  status    String     @default("PENDING") // String instead of enum for SQLite
+  sentAt    DateTime?
+  error     String?
+  
+  // Relations
+  emailJobId String
+  emailJob   EmailJob @relation(fields: [emailJobId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_sends")
+}
